@@ -1,10 +1,8 @@
-#include "types.h"
-#include "stat.h"
-#include "user.h"
+#include <stdio.h>
 
-int
-main(int argc, char *argv[])
-{
-    printf(1, "Hello world\n");
-    exit();
+#define x 42
+
+int main() {
+    printf("The meaning of life: %d\n", x);
 }
+
