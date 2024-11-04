@@ -12,6 +12,8 @@ struct {
   struct proc proc[NPROC];
 } ptable;
 
+
+
 static struct proc *initproc;
 
 int nextpid = 1;
@@ -531,4 +533,26 @@ procdump(void)
     }
     cprintf("\n");
   }
+}
+
+// In proc.c
+// In proc.c
+int set_nice(int pid, int new_value) {
+    if (new_value < 0 || new_value > 5) {
+        return -1; // Return error if the nice value is out of bounds
+    }
+
+    struct proc *p;
+    int old_value = -1;
+
+    acquire(&ptable.lock); // Lock process table
+    for (p = ptable.proc; p < &ptable.proc[NPROC]; p++) {
+        if (p->pid == pid) {
+            old_value = p->nice_value;
+            p->nice_value = new_value;
+            break;
+        }
+    }
+    release(&ptable.lock);
+    return old_value; // Return the old nice value, or -1 if PID not found
 }

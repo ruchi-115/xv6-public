@@ -6,6 +6,9 @@
 #include "memlayout.h"
 #include "mmu.h"
 #include "proc.h"
+#include "spinlock.h"
+
+
 
 int
 sys_fork(void)
@@ -89,3 +92,34 @@ sys_uptime(void)
   release(&tickslock);
   return xticks;
 }
+
+// int sys_nice(void) {
+//     int pid, new_value;
+//     if (argint(0, &pid) < 0 || argint(1, &new_value) < 0) {
+//         return -1; // return an error for invalid arguments
+//     }
+
+//     struct proc *p;
+//     int old_value = -1;
+
+//     acquire(&ptable.lock); // Lock process table
+//     for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
+//         if (p->pid == pid) {
+//             old_value = p->nice_value;
+//             p->nice_value = new_value;
+//             break;
+//         }
+//     }
+//     release(&ptable.lock);
+//     return old_value >= 0 ? pid : -1;
+// }
+int sys_nice(void) {
+    int pid, new_value;
+    if (argint(0, &pid) < 0 || argint(1, &new_value) < 0) {
+        return -1; // return an error for invalid arguments
+    }
+
+    int old_value = set_nice(pid, new_value);
+    return old_value == -1 ? -1 : old_value; // Return old nice value or error
+}
+
