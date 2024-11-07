@@ -556,3 +556,51 @@ int set_nice(int pid, int new_value) {
     release(&ptable.lock);
     return old_value; // Return the old nice value, or -1 if PID not found
 }
+// p->priority = 10; // Default medium priority
+// In proc.c (scheduler function)
+void priority_scheduler(void) {
+    struct proc *p;
+    struct proc *highest_priority_proc;
+
+    for(;;){
+        // Enable interrupts on this processor.
+        sti();
+
+        highest_priority_proc = 0;
+
+        acquire(&ptable.lock);
+        // Loop over process table looking for process with highest priority
+        for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
+            if(p->state != RUNNABLE)
+                continue;
+            
+            if(!highest_priority_proc || p->priority > highest_priority_proc->priority) {
+                highest_priority_proc = p;
+            }
+        }
+
+        if(highest_priority_proc) {
+            // Run the process with the highest priority.
+            p = highest_priority_proc;
+            p->state = RUNNING;
+            swtch(&mycpu()->scheduler, p->context);
+            // Process is done running for now.
+            // It should have changed its p->state before coming back.
+        }
+        release(&ptable.lock);
+    }
+}
+
+int setpriority(int pid, int priority) {
+    struct proc *p;
+    acquire(&ptable.lock);
+    for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
+        if(p->pid == pid){
+            p->priority = priority;
+            release(&ptable.lock);
+            return 0;
+        }
+    }
+    release(&ptable.lock);
+    return -1; // Process not found
+}

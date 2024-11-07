@@ -93,26 +93,6 @@ sys_uptime(void)
   return xticks;
 }
 
-// int sys_nice(void) {
-//     int pid, new_value;
-//     if (argint(0, &pid) < 0 || argint(1, &new_value) < 0) {
-//         return -1; // return an error for invalid arguments
-//     }
-
-//     struct proc *p;
-//     int old_value = -1;
-
-//     acquire(&ptable.lock); // Lock process table
-//     for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
-//         if (p->pid == pid) {
-//             old_value = p->nice_value;
-//             p->nice_value = new_value;
-//             break;
-//         }
-//     }
-//     release(&ptable.lock);
-//     return old_value >= 0 ? pid : -1;
-// }
 int sys_nice(void) {
     int pid, new_value;
     if (argint(0, &pid) < 0 || argint(1, &new_value) < 0) {
@@ -123,3 +103,17 @@ int sys_nice(void) {
     return old_value == -1 ? -1 : old_value; // Return old nice value or error
 }
 
+// In sysproc.c
+int
+sys_setpriority(void)
+{
+    int pid, priority;
+
+    // Retrieve arguments from user space
+    if(argint(0, &pid) < 0)
+        return -1;
+    if(argint(1, &priority) < 0)
+        return -1;
+
+    return setpriority(pid, priority);  // Call your implementation in proc.c
+}
